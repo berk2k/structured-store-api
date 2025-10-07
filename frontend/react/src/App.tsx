@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { api } from "./api";
+import type { Product } from "./types/Product";
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    api.get<Product[]>("/products")
+      .then(res => setProducts(res.data))
+      .catch(err => console.error("API Error:", err));
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ padding: "20px" }}>
+      <h1>🛍️ Product List</h1>
+      {products.map((p) => (
+        <div key={p.id} style={{ marginBottom: "30px" }}>
+          <h2>{p.name}</h2>
+          <img src={p.image} alt={p.name} width={200} />
+          <p>{p.description}</p>
+          <p>
+            <b>{p.price} {p.currency}</b> — {p.stock > 0 ? "In Stock" : "Out of Stock"}
+          </p>
+
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org/",
+                "@type": "Product",
+                name: p.name,
+                image: [p.image],
+                description: p.description,
+                brand: { "@type": "Brand", name: p.brand },
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: p.rating,
+                  reviewCount: p.reviewCount
+                },
+                offers: {
+                  "@type": "Offer",
+                  priceCurrency: p.currency,
+                  price: p.price,
+                  availability: p.stock > 0
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock"
+                }
+              })
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
