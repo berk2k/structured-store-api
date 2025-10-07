@@ -11,13 +11,28 @@ exports.getAllProducts = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, stock } = req.body;
-    const product = await Product.create({ name, description, price, stock });
+    const { name, description, price, stock, image, category, brand, rating, reviewCount, currency } = req.body;
+
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      stock,
+      image,
+      category,
+      brand,
+      rating,
+      reviewCount,
+      currency
+    });
+
     res.status(201).json(product);
   } catch (err) {
+    console.error(err);
     res.status(400).json({ error: "Failed to create product." });
   }
 };
+
 
 exports.updateProduct = async (req, res) => {
   try {
